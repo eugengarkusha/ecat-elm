@@ -1,0 +1,85 @@
+	<!DOCTYPE html>
+	<html>
+	<head>
+
+		<title>sdasd</title>
+
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+		<script src="js/deps/jquery.js"></script>
+		<script src="js/elmapp.js"></script>
+		<script src="js/deps/jquery.datetimepicker.full.js"></script>
+		<script src="js/deps/lodash.js"></script>
+		
+
+		<link rel = "stylesheet" href = "css/jquery.datetimepicker.css">
+		<link rel = "stylesheet" href = "css/style.css">
+		<link rel = "stylesheet" href = "css/normalize.css">
+
+	</head>
+
+	<body>
+		
+		<div id="dtp"></div>
+	
+
+		</div>
+		<script>
+			
+			//Embedding app
+			var app = Elm.App.embed(document.getElementById("dtp"))
+			
+			//channel of communication between Elm and js
+			//now used to instruct js to render dateTimePicker at requred id
+			app.ports.appOut.subscribe(function(msg){
+				console.log("in js appout msg:"+msg)		
+				if(_.startsWith(msg, "init:")) {
+
+					var pickerId = msg.split(":")[1]
+					whenAvailable(pickerId, 10, 5, () => {
+						$('#'+pickerId)
+						.datetimepicker()
+						.appendTo($('#'+pickerId));
+					}) 
+				}
+				//else alert(msg);
+
+				
+			})
+
+			
+
+			var pastDate = null
+			function filterDates (dateStr, f){
+				if(dateStr != pastDate) {
+					console.log("sending " + dateStr + " to elm")
+					f(dateStr)
+					pastDate = dateStr
+				}
+				else console.log("dateStr=pastDate="+dateStr)
+			}
+			
+
+			//lib
+			function sleep (time) {return new Promise((resolve) => setTimeout(resolve, time));}
+
+			function whenAvailable(id, pollInterval, nTries,  func) {
+				
+				if(nTries == 0 ) throw "element with id '" + id + "' was not eventually available on the page"
+				console.log("in whenAvailable")
+				if(document.getElementById(id) != null) func();
+				else sleep(pollInterval).then(() => { whenAvailable(id, pollInterval, nTries -1, func);})
+				
+
+			}	
+
+		
+		
+		</script>
+		
+
+		
+	</body>
+	</html>

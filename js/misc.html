@@ -1,0 +1,16 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+			function genTimeList(start, end){
+				if(start > end)throw("start>end")
+
+				function round(time) {return time.set('m', (time.minute() == 0 || time.minute() > 30) ?  0 :  30 )}	
+
+				var agg =[]		
+
+				function gen(start, end){
+					agg.push(start)
+					if(!start.isSame(end)) gen(start.clone().add('m', 30), end)
+				}
+			
+				gen(round(start), round(end), [])
+				return agg
+			}
