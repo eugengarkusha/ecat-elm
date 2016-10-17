@@ -7,14 +7,15 @@ import Html.Events exposing (..)
 import Messages exposing(Msg) 
 import Debug exposing(..)
 import Json.Decode as Json exposing(..)
+import Date exposing(Date)
 
 
 
 
-onChange : (String->Msg) -> Attribute Msg
+onChange : (Date -> Msg) -> Attribute Msg
 onChange tagger =  
   --on "onchange" (Json.map (log "tagger " >> tagger) targetValue)
-  on "blur" (Json.map tagger targetValue)
+  on "blur" (Json.customDecoder targetValue (Date.fromString >> (Result.map tagger)) )
 
   
 --onChange Messages.SetDateTime
