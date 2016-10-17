@@ -11,6 +11,8 @@ import FrontPage
 import Messages exposing(..)
 import Debug exposing(..)
 import Date exposing (..)
+import Date.Extra.Compare exposing(..)
+
 main = 
     App.program
     { init = (Model (Date.fromTime 213123) (Date.fromTime 2313213), Cmd.batch <| List.map ((<|) appOut ) ["init:" ++ dpFrom,"init:" ++ dpTo] )
@@ -31,12 +33,13 @@ type alias Model =
     }
 
 
+
 update : Msg -> Model -> (Model, Cmd msg)
 update msg model =
     case msg of
         SetStartDateTime dt -> log "!!in upd start :" ({model | startdt = dt}, appOut (toString(dt) ++ " start !!"))
         SetEndDateTime dt -> log "!!in upd end :" ({model | enddt = dt}, appOut (toString(dt) ++ " end !!"))
-        SubmitDates  -> log "submit" (model, Cmd.none)
+        SubmitDates  -> (if is After model.enddt model.startdt then log "submit" else log "fail to is not after from") (model, Cmd.none)
 
 subs : Model -> Sub Msg
 subs model =  Sub.none--dateTimeInput SetDateTime
