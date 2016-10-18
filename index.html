@@ -12,6 +12,9 @@
 		<script src="js/elmapp.js"></script>
 		<script src="js/deps/jquery.datetimepicker.full.js"></script>
 		<script src="js/deps/lodash.js"></script>
+		<script src="js/deps/moment.js"></script>
+		<script src="js/util/helpers.js"></script>
+		<script src="js/widgets/datePickerControl.js"></script>
 		
 
 		<link rel = "stylesheet" href = "css/jquery.datetimepicker.css">
@@ -33,50 +36,20 @@
 			
 			//channel of communication between Elm and js
 			//now used to instruct js to render dateTimePicker at requred id
-			app.ports.appOut.subscribe(function(msg){
-				console.log("in js appout msg:"+msg)		
-				if(_.startsWith(msg, "init:")) {
-
-					var pickerId = msg.split(":")[1]
-					whenAvailable(pickerId, 10, 5, () => {
-						$('#'+pickerId)
-						.datetimepicker()
-						.appendTo($('#'+pickerId));
-					}) 
-				}
-				//else alert(msg);
-
-				
-			})
+			app.ports.datePickerCtrl.subscribe(function(msg){appendPicker(msg)})
 
 			
 
-			var pastDate = null
-			function filterDates (dateStr, f){
-				if(dateStr != pastDate) {
-					console.log("sending " + dateStr + " to elm")
-					f(dateStr)
-					pastDate = dateStr
-				}
-				else console.log("dateStr=pastDate="+dateStr)
-			}
-			
-
-			//lib
-			function sleep (time) {return new Promise((resolve) => setTimeout(resolve, time));}
-
-			function whenAvailable(id, pollInterval, nTries,  func) {
-				
-				if(nTries == 0 ) throw "element with id '" + id + "' was not eventually available on the page"
-				console.log("in whenAvailable")
-				if(document.getElementById(id) != null) func();
-				else sleep(pollInterval).then(() => { whenAvailable(id, pollInterval, nTries -1, func);})
-				
-
-			}	
-
-		
-		
+			// var pastDate = null
+			// function filterDates (dateStr, f){
+				// if(dateStr != pastDate) {
+					// console.log("sending " + dateStr + " to elm")
+					// f(dateStr)
+					// pastDate = dateStr
+				// }
+				// else console.log("dateStr=pastDate="+dateStr)
+			// }
+					
 		</script>
 		
 

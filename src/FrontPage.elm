@@ -15,7 +15,7 @@ import Date exposing(Date)
 onChange : (Date -> Msg) -> Attribute Msg
 onChange tagger =  
   --on "onchange" (Json.map (log "tagger " >> tagger) targetValue)
-  on "blur" (Json.customDecoder targetValue (Date.fromString >> (Result.map tagger)) )
+  on "input" (Json.customDecoder targetValue (Date.fromString >> (Result.map tagger)) )
 
   
 --onChange Messages.SetDateTime
