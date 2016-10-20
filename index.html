@@ -30,25 +30,15 @@
 
 		</div>
 		<script>
-			
+			console.log("argh1")
 			//Embedding app
 			var app = Elm.App.embed(document.getElementById("dtp"))
-			
+			console.log("argh2"+ app)
 			//channel of communication between Elm and js
 			//now used to instruct js to render dateTimePicker at requred id
-			app.ports.datePickerCtrl.subscribe(function(msg){appendPicker(msg)})
-
-			
-
-			// var pastDate = null
-			// function filterDates (dateStr, f){
-				// if(dateStr != pastDate) {
-					// console.log("sending " + dateStr + " to elm")
-					// f(dateStr)
-					// pastDate = dateStr
-				// }
-				// else console.log("dateStr=pastDate="+dateStr)
-			// }
+			app.ports.datePickerCtrl.subscribe(function(msg){configurePicker(msg)})
+			console.log("argh3")
+		
 					
 		</script>
 		

@@ -4,10 +4,11 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Messages exposing(Msg) 
+import Messages exposing(..) 
 import Debug exposing(..)
 import Json.Decode as Json exposing(..)
 import Date exposing(Date)
+import DatePickers exposing (from, to)
 
 
 
@@ -19,8 +20,8 @@ onChange tagger =
 
   
 --onChange Messages.SetDateTime
-view : String -> Html Msg
-view elId  = 
+view :  Html Msg
+view = 
  body [ class "page-home" ]
   [ div [ class "wrapper" ]
     [ div [ class "slider" ]
@@ -84,10 +85,8 @@ view elId  =
         , p []
           [ text "Пребывание в отеле \"Екатерина\" оставит незабываемые впечатления, и Вам непременно захочется возвращаться к нам и снова осуществлять бронирование гостиниц.        " ]
         ],
-        input [id "dpFrom", name "start date", type' "text", onChange Messages.SetStartDateTime]
-         [],
-        input [id "dpTo", name "end date", type' "text", onChange Messages.SetEndDateTime]
-         [],
+        App.map DPMSG from,
+        App.map DPMSG to,
          button [name "submit", onClick Messages.SubmitDates]
          [text "submit"]
      ]

@@ -6,41 +6,43 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import String
 import Task
-import Ports exposing(datePickerCtrl)
 import FrontPage 
 import Messages exposing(..)
 import Debug exposing(..)
 import Date exposing (..)
-import Date.Extra.Compare exposing(..)
+import Date.Extra as Date
+import DatePickers as DP
+
+
+
 
 main = 
     App.program
-    { init = (Model (Date.fromTime 213123) (Date.fromTime 2313213), Cmd.batch <| List.map ((<|) datePickerCtrl) [dpFrom ++ ":" , dpTo ++ ":" ] )
+    { init = (Model DP.initModel, Cmd.map DPMSG DP.initCmd)
     , view = view
     , update = update
     , subscriptions = subs
     }
 
     
-
-
-dpFrom = "dpFrom"
-dpTo = "dpTo"
-
 type alias Model = 
-    { startdt : Date    
-     ,enddt : Date    
+    {dpModel : DP.Model
     }
 
 
-
-update : Msg -> Model -> (Model, Cmd msg)
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         --TODO: liimit times
-        SetStartDateTime dt -> log "!!in upd start :" ({model | startdt = dt}, Cmd.none) --appOut (toString(dt) ++ " start !!"))--
-        SetEndDateTime dt -> log "!!in upd end :" ({model | enddt = dt}, Cmd.none)--appOut (toString(dt) ++ " end !!"))
-        SubmitDates  -> (if is After model.enddt model.startdt then log "submit" else log "fail to is not after from") (model, Cmd.none)
+        DPMSG m -> 
+            let (updModel, cmd) = DP.update m model.dpModel
+            in ({model | dpModel = updModel},  Cmd.map DPMSG cmd)
+        SubmitDates  ->  
+            case (DP.start model.dpModel, DP.end model.dpModel) of 
+                --Where to do dated validation , probablyin dp module(disabling wrong values possibility)
+                (Just start, Just end) -> (if Date.compare (end) (start) == GT then log "submit" else log "fail to is not after from") (model, Cmd.none)
+                _ ->  log "will not submit, dates are not fully set" (model, Cmd.none)
+
 
 subs : Model -> Sub Msg
 subs model =  Sub.none--dateTimeInput SetDateTime
@@ -48,4 +50,6 @@ subs model =  Sub.none--dateTimeInput SetDateTime
 
 
 view : Model -> Html Msg
-view model = FrontPage.view dpFrom
+--TODO: make submit button disabled untill dates are set
+--TODO: default time - checkintime
+view model = FrontPage.view 
