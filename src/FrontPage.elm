@@ -8,7 +8,7 @@ import Messages exposing(..)
 import Debug exposing(..)
 import Json.Decode as Json exposing(..)
 import Date exposing(Date)
-import DatePickers exposing (from, to)
+import DatePickers exposing (from, to, Model,isDefined)
 
 
 
@@ -18,10 +18,10 @@ onChange tagger =
   --on "onchange" (Json.map (log "tagger " >> tagger) targetValue)
   on "input" (Json.customDecoder targetValue (Date.fromString >> (Result.map tagger)) )
 
-  
+
 --onChange Messages.SetDateTime
-view :  Html Msg
-view = 
+view : DatePickers.Model -> Html Msg
+view model = 
  body [ class "page-home" ]
   [ div [ class "wrapper" ]
     [ div [ class "slider" ]
@@ -85,9 +85,9 @@ view =
         , p []
           [ text "Пребывание в отеле \"Екатерина\" оставит незабываемые впечатления, и Вам непременно захочется возвращаться к нам и снова осуществлять бронирование гостиниц.        " ]
         ],
-        App.map DPMSG from,
-        App.map DPMSG to,
-         button [name "submit", onClick Messages.SubmitDates]
+        App.map DPMSG (from model),
+        App.map DPMSG (to model),
+         button [name "submit", disabled (not ( (isDefined model.startDt) && (isDefined model.endDt) )), onClick Messages.SubmitDates]
          [text "submit"]
      ]
     ]

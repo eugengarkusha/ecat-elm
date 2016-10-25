@@ -45,11 +45,12 @@ update msg model =
 
 
 subs : Model -> Sub Msg
-subs model =  Sub.none--dateTimeInput SetDateTime
+subs model =  Sub.map DPMSG DP.sub
+--Sub.none--dateTimeInput SetDateTime
 
 
 
 view : Model -> Html Msg
 --TODO: make submit button disabled untill dates are set
 --TODO: default time - checkintime
-view model = FrontPage.view 
+view model = FrontPage.view model.dpModel
