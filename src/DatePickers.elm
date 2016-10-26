@@ -118,7 +118,29 @@ exists f m = m |> Maybe.map f |> Maybe.withDefault False
     --    Nothing ->  Debug.crash(lbl ++ ": trying to get value from empty maybe")
 
 --dateOps
-setTime t  =  Date.floor Date.Day >> Date.add Date.Hour t.h >> Date.add Date.Minute t.m
+setTime t d =  
+    let floored = Date.floor Date.Day d
+        res = floored |> Date.add Date.Hour t.h |> Date.add Date.Minute t.m
+        offsetDif = Date.offsetFromUtc floored -  Date.offsetFromUtc res
+    in    
+        res |> Date.add Date.Minute offsetDif
+
+minutesToTime m = Time (m // 60) (m % 60)         
+
+timeToMinutes t = t.h * 60 + t.m
+
+ceil interval number = 
+    let fullIntervals = number // interval
+        noAdditionalInterval = (number % interval) == 0
+    in  interval * (fullIntervals + if  noAdditionalInterval then 0 else 1)
+
+getTime d = Time (Date.hour d) (Date.minute d)
+
+--TODO:this method look shitty
+ceilDateTo hours d = 
+    let time = getTime d
+    in  setTime (time |> timeToMinutes |> ceil (60 * hours) |> minutesToTime) d
+
 isSameDay date1 date2 = (Date.floor Date.Day date1) == (Date.floor Date.Day date2)
 nextDay = Date.add Date.Day 1 >> Date.floor Date.Day 
 prevDay = Date.add Date.Day -1 >> Date.floor Date.Day 
@@ -155,8 +177,8 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
 
     let 
-        fromUpDateLimit now = if (Date.hour now) >= 22 then  now |> nextDay  else  now 
-        fromUpTimeLimit now from  = if isSameDay now from then  Time ((Date.hour now)+1) (Date.minute now)  else Time 0 0
+        fromUpDateLimit now = if (Date.hour now) >= 22 then  now |> nextDay else now 
+        fromUpTimeLimit now from  = if isSameDay now from then  now |>  Date.add Date.Hour 1 |> getTime  else Time 0 0
         process date tag = (model, Cmd.map (tag date) unsafeNow)
     in         
 
@@ -189,11 +211,11 @@ update msg model =
                             if model.startTimeSet && (Date.compare start timeLimit  == GT) then start
                             else if Date.compare checkinTime timeLimit  == GT  then checkinTime
                             else timeLimit    
-                        else if model.startTimeSet then start else  checkinTime 
+                        else if model.startTimeSet then start else checkinTime 
                     model': Model
                     model'= 
                         ({model |
-                         startDt = Just correctedDate
+                         startDt = correctedDate |> ceilDateTo 1 |> Just
                          ,fromTimePicker = True
                          ,toUpLimit =  nextDay start
                          ,fromUpTimeLimit = fromUpTimeLimit now start 
@@ -209,13 +231,13 @@ update msg model =
 
             EndDateSet end now ->  
                 let 
-                    correctedDate = if model.endTimeSet then end else end |> setTime (Time 12 0) 
+                    correctedDate = if model.endTimeSet then  end else  end |> setTime (Time 12 0) 
                     model': Model
                     model' =
                     ({model |
                      fromLoLimit = Just (prevDay end)
                     ,toTimePicker = True
-                    ,endDt = Just correctedDate
+                    ,endDt = Just correctedDate 
                     })
                 in 
                     (model', toCmd model')    

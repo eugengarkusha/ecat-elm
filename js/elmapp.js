@@ -10189,8 +10189,8 @@ var _user$project$DatePickers$unsafeNow = A3(
 		return _elm_lang$core$Native_Utils.crash(
 			'DatePickers',
 			{
-				start: {line: 125, column: 33},
-				end: {line: 125, column: 44}
+				start: {line: 146, column: 33},
+				end: {line: 146, column: 44}
 			})('could not get now');
 	},
 	_elm_lang$core$Basics$identity,
@@ -10213,19 +10213,28 @@ var _user$project$DatePickers$isSameDay = F2(
 			A2(_justinmimbs$elm_date_extra$Date_Extra$floor, _justinmimbs$elm_date_extra$Date_Extra$Day, date1),
 			A2(_justinmimbs$elm_date_extra$Date_Extra$floor, _justinmimbs$elm_date_extra$Date_Extra$Day, date2));
 	});
-var _user$project$DatePickers$setTime = function (t) {
-	return function (_p2) {
-		return A3(
+var _user$project$DatePickers$ceil = F2(
+	function (interval, number) {
+		var noAdditionalInterval = _elm_lang$core$Native_Utils.eq(
+			A2(_elm_lang$core$Basics_ops['%'], number, interval),
+			0);
+		var fullIntervals = (number / interval) | 0;
+		return interval * (fullIntervals + (noAdditionalInterval ? 0 : 1));
+	});
+var _user$project$DatePickers$timeToMinutes = function (t) {
+	return (t.h * 60) + t.m;
+};
+var _user$project$DatePickers$setTime = F2(
+	function (t, d) {
+		var floored = A2(_justinmimbs$elm_date_extra$Date_Extra$floor, _justinmimbs$elm_date_extra$Date_Extra$Day, d);
+		var res = A3(
 			_justinmimbs$elm_date_extra$Date_Extra$add,
 			_justinmimbs$elm_date_extra$Date_Extra$Minute,
 			t.m,
-			A3(
-				_justinmimbs$elm_date_extra$Date_Extra$add,
-				_justinmimbs$elm_date_extra$Date_Extra$Hour,
-				t.h,
-				A2(_justinmimbs$elm_date_extra$Date_Extra$floor, _justinmimbs$elm_date_extra$Date_Extra$Day, _p2)));
-	};
-};
+			A3(_justinmimbs$elm_date_extra$Date_Extra$add, _justinmimbs$elm_date_extra$Date_Extra$Hour, t.h, floored));
+		var offsetDif = _justinmimbs$elm_date_extra$Date_Extra$offsetFromUtc(floored) - _justinmimbs$elm_date_extra$Date_Extra$offsetFromUtc(res);
+		return A3(_justinmimbs$elm_date_extra$Date_Extra$add, _justinmimbs$elm_date_extra$Date_Extra$Minute, offsetDif, res);
+	});
 var _user$project$DatePickers$exists = F2(
 	function (f, m) {
 		return A2(
@@ -10241,8 +10250,8 @@ var _user$project$DatePickers$fold = F3(
 			A2(_elm_lang$core$Maybe$map, f, m));
 	});
 var _user$project$DatePickers$isDefined = function (m) {
-	var _p3 = m;
-	if (_p3.ctor === 'Just') {
+	var _p2 = m;
+	if (_p2.ctor === 'Just') {
 		return true;
 	} else {
 		return false;
@@ -10254,9 +10263,9 @@ var _user$project$DatePickers$end = function (_) {
 var _user$project$DatePickers$start = function (_) {
 	return _.startDt;
 };
-var _user$project$DatePickers$toLoStr = function (_p4) {
+var _user$project$DatePickers$toLoStr = function (_p3) {
 	return _elm_lang$core$String$toLower(
-		_elm_lang$core$Basics$toString(_p4));
+		_elm_lang$core$Basics$toString(_p3));
 };
 var _user$project$DatePickers$dpToId = 'dpTo';
 var _user$project$DatePickers$dpFromId = 'dpFrom';
@@ -10377,6 +10386,30 @@ var _user$project$DatePickers$Time = F2(
 	function (a, b) {
 		return {h: a, m: b};
 	});
+var _user$project$DatePickers$minutesToTime = function (m) {
+	return A2(
+		_user$project$DatePickers$Time,
+		(m / 60) | 0,
+		A2(_elm_lang$core$Basics_ops['%'], m, 60));
+};
+var _user$project$DatePickers$getTime = function (d) {
+	return A2(
+		_user$project$DatePickers$Time,
+		_elm_lang$core$Date$hour(d),
+		_elm_lang$core$Date$minute(d));
+};
+var _user$project$DatePickers$ceilDateTo = F2(
+	function (hours, d) {
+		var time = _user$project$DatePickers$getTime(d);
+		return A2(
+			_user$project$DatePickers$setTime,
+			_user$project$DatePickers$minutesToTime(
+				A2(
+					_user$project$DatePickers$ceil,
+					60 * hours,
+					_user$project$DatePickers$timeToMinutes(time))),
+			d);
+	});
 var _user$project$DatePickers$Model = function (a) {
 	return function (b) {
 		return function (c) {
@@ -10412,15 +10445,15 @@ var _user$project$DatePickers$DateInputError = F3(
 	});
 var _user$project$DatePickers$dateOrTime = F5(
 	function (picker, dateTag, timeTag, prevDateOpt, inpDateStr) {
-		var _p5 = _elm_lang$core$Date$fromString(inpDateStr);
-		if (_p5.ctor === 'Ok') {
-			var _p6 = _p5._0;
+		var _p4 = _elm_lang$core$Date$fromString(inpDateStr);
+		if (_p4.ctor === 'Ok') {
+			var _p5 = _p4._0;
 			return A2(
 				_user$project$DatePickers$exists,
-				_user$project$DatePickers$isSameDay(_p6),
-				prevDateOpt) ? timeTag(_p6) : dateTag(_p6);
+				_user$project$DatePickers$isSameDay(_p5),
+				prevDateOpt) ? timeTag(_p5) : dateTag(_p5);
 		} else {
-			return _elm_lang$core$Native_Utils.eq(inpDateStr, '') ? _user$project$DatePickers$EmptyInput(picker) : A3(_user$project$DatePickers$DateInputError, picker, inpDateStr, _p5._0);
+			return _elm_lang$core$Native_Utils.eq(inpDateStr, '') ? _user$project$DatePickers$EmptyInput(picker) : A3(_user$project$DatePickers$DateInputError, picker, inpDateStr, _p4._0);
 		}
 	});
 var _user$project$DatePickers$UpdateFromUpLimit = function (a) {
@@ -10429,9 +10462,9 @@ var _user$project$DatePickers$UpdateFromUpLimit = function (a) {
 var _user$project$DatePickers$sub = A2(
 	_elm_lang$core$Time$every,
 	_elm_lang$core$Time$minute,
-	function (_p7) {
+	function (_p6) {
 		return _user$project$DatePickers$UpdateFromUpLimit(
-			_elm_lang$core$Date$fromTime(_p7));
+			_elm_lang$core$Date$fromTime(_p6));
 	});
 var _user$project$DatePickers$EndTimeSet = F2(
 	function (a, b) {
@@ -10464,26 +10497,24 @@ var _user$project$DatePickers$update = F2(
 			});
 		var fromUpTimeLimit = F2(
 			function (now, from) {
-				return A2(_user$project$DatePickers$isSameDay, now, from) ? A2(
-					_user$project$DatePickers$Time,
-					_elm_lang$core$Date$hour(now) + 1,
-					_elm_lang$core$Date$minute(now)) : A2(_user$project$DatePickers$Time, 0, 0);
+				return A2(_user$project$DatePickers$isSameDay, now, from) ? _user$project$DatePickers$getTime(
+					A3(_justinmimbs$elm_date_extra$Date_Extra$add, _justinmimbs$elm_date_extra$Date_Extra$Hour, 1, now)) : A2(_user$project$DatePickers$Time, 0, 0);
 			});
 		var fromUpDateLimit = function (now) {
 			return (_elm_lang$core$Native_Utils.cmp(
 				_elm_lang$core$Date$hour(now),
 				22) > -1) ? _user$project$DatePickers$nextDay(now) : now;
 		};
-		var _p8 = msg;
-		switch (_p8.ctor) {
+		var _p7 = msg;
+		switch (_p7.ctor) {
 			case 'InitPickers':
-				var _p9 = _p8._0;
-				var fromUpDateLim = fromUpDateLimit(_p9);
+				var _p8 = _p7._0;
+				var fromUpDateLim = fromUpDateLimit(_p8);
 				var model$ = _elm_lang$core$Native_Utils.update(
 					model,
 					{
 						fromUpDateLimit: fromUpDateLim,
-						fromUpTimeLimit: A2(fromUpTimeLimit, _p9, _p9),
+						fromUpTimeLimit: A2(fromUpTimeLimit, _p8, _p8),
 						toUpLimit: _user$project$DatePickers$nextDay(fromUpDateLim)
 					});
 				return {
@@ -10492,15 +10523,15 @@ var _user$project$DatePickers$update = F2(
 					_1: _user$project$DatePickers$toCmd(model$)
 				};
 			case 'UpdateFromUpLimit':
-				var _p10 = _p8._0;
+				var _p9 = _p7._0;
 				var model$ = _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						fromUpDateLimit: fromUpDateLimit(_p10),
+						fromUpDateLimit: fromUpDateLimit(_p9),
 						fromUpTimeLimit: A3(
 							_user$project$DatePickers$fold,
 							model.fromUpTimeLimit,
-							fromUpTimeLimit(_p10),
+							fromUpTimeLimit(_p9),
 							model.startDt)
 					});
 				return {
@@ -10509,25 +10540,26 @@ var _user$project$DatePickers$update = F2(
 					_1: _user$project$DatePickers$toCmd(model$)
 				};
 			case 'StartDateSet':
-				var _p12 = _p8._0;
-				var _p11 = _p8._1;
-				var timeLimit = A3(_justinmimbs$elm_date_extra$Date_Extra$add, _justinmimbs$elm_date_extra$Date_Extra$Hour, 1, _p11);
+				var _p11 = _p7._0;
+				var _p10 = _p7._1;
+				var timeLimit = A3(_justinmimbs$elm_date_extra$Date_Extra$add, _justinmimbs$elm_date_extra$Date_Extra$Hour, 1, _p10);
 				var checkinTime = A2(
 					_user$project$DatePickers$setTime,
 					A2(_user$project$DatePickers$Time, 13, 0),
-					_p12);
-				var correctedDate = A2(_user$project$DatePickers$isSameDay, _p12, _p11) ? ((model.startTimeSet && _elm_lang$core$Native_Utils.eq(
-					A2(_justinmimbs$elm_date_extra$Date_Extra$compare, _p12, timeLimit),
-					_elm_lang$core$Basics$GT)) ? _p12 : (_elm_lang$core$Native_Utils.eq(
+					_p11);
+				var correctedDate = A2(_user$project$DatePickers$isSameDay, _p11, _p10) ? ((model.startTimeSet && _elm_lang$core$Native_Utils.eq(
+					A2(_justinmimbs$elm_date_extra$Date_Extra$compare, _p11, timeLimit),
+					_elm_lang$core$Basics$GT)) ? _p11 : (_elm_lang$core$Native_Utils.eq(
 					A2(_justinmimbs$elm_date_extra$Date_Extra$compare, checkinTime, timeLimit),
-					_elm_lang$core$Basics$GT) ? checkinTime : timeLimit)) : (model.startTimeSet ? _p12 : checkinTime);
+					_elm_lang$core$Basics$GT) ? checkinTime : timeLimit)) : (model.startTimeSet ? _p11 : checkinTime);
 				var model$ = _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						startDt: _elm_lang$core$Maybe$Just(correctedDate),
+						startDt: _elm_lang$core$Maybe$Just(
+							A2(_user$project$DatePickers$ceilDateTo, 1, correctedDate)),
 						fromTimePicker: true,
-						toUpLimit: _user$project$DatePickers$nextDay(_p12),
-						fromUpTimeLimit: A2(fromUpTimeLimit, _p11, _p12)
+						toUpLimit: _user$project$DatePickers$nextDay(_p11),
+						fromUpTimeLimit: A2(fromUpTimeLimit, _p10, _p11)
 					});
 				return {
 					ctor: '_Tuple2',
@@ -10539,7 +10571,7 @@ var _user$project$DatePickers$update = F2(
 					model,
 					{
 						startTimeSet: true,
-						startDt: _elm_lang$core$Maybe$Just(_p8._0)
+						startDt: _elm_lang$core$Maybe$Just(_p7._0)
 					});
 				return {
 					ctor: '_Tuple2',
@@ -10547,16 +10579,16 @@ var _user$project$DatePickers$update = F2(
 					_1: _user$project$DatePickers$toCmd(model$)
 				};
 			case 'EndDateSet':
-				var _p13 = _p8._0;
-				var correctedDate = model.endTimeSet ? _p13 : A2(
+				var _p12 = _p7._0;
+				var correctedDate = model.endTimeSet ? _p12 : A2(
 					_user$project$DatePickers$setTime,
 					A2(_user$project$DatePickers$Time, 12, 0),
-					_p13);
+					_p12);
 				var model$ = _elm_lang$core$Native_Utils.update(
 					model,
 					{
 						fromLoLimit: _elm_lang$core$Maybe$Just(
-							_user$project$DatePickers$prevDay(_p13)),
+							_user$project$DatePickers$prevDay(_p12)),
 						toTimePicker: true,
 						endDt: _elm_lang$core$Maybe$Just(correctedDate)
 					});
@@ -10570,7 +10602,7 @@ var _user$project$DatePickers$update = F2(
 					model,
 					{
 						endTimeSet: true,
-						endDt: _elm_lang$core$Maybe$Just(_p8._0)
+						endDt: _elm_lang$core$Maybe$Just(_p7._0)
 					});
 				return {
 					ctor: '_Tuple2',
@@ -10584,25 +10616,25 @@ var _user$project$DatePickers$update = F2(
 						'picker=',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p8._0),
+							_elm_lang$core$Basics$toString(_p7._0),
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								' input=',
 								A2(
 									_elm_lang$core$Basics_ops['++'],
-									_p8._1,
-									A2(_elm_lang$core$Basics_ops['++'], 'error=', _p8._2))))));
+									_p7._1,
+									A2(_elm_lang$core$Basics_ops['++'], 'error=', _p7._2))))));
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'EmptyInput':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'SetStartDate':
-				return A2(process, _p8._0, _user$project$DatePickers$StartDateSet);
+				return A2(process, _p7._0, _user$project$DatePickers$StartDateSet);
 			case 'SetStartTime':
-				return A2(process, _p8._0, _user$project$DatePickers$StartTimeSet);
+				return A2(process, _p7._0, _user$project$DatePickers$StartTimeSet);
 			case 'SetEndDate':
-				return A2(process, _p8._0, _user$project$DatePickers$EndDateSet);
+				return A2(process, _p7._0, _user$project$DatePickers$EndDateSet);
 			default:
-				return A2(process, _p8._0, _user$project$DatePickers$EndTimeSet);
+				return A2(process, _p7._0, _user$project$DatePickers$EndTimeSet);
 		}
 	});
 var _user$project$DatePickers$SetEndTime = function (a) {
@@ -10633,9 +10665,9 @@ var _user$project$DatePickers$to = function (model) {
 				_elm_lang$html$Html_Attributes$value(
 				A3(_user$project$DatePickers$fold, '', _user$project$DatePickers$dateTimeFormat, model.endDt)),
 				_elm_lang$html$Html_Attributes$disabled(
-				function (_p14) {
+				function (_p13) {
 					return _elm_lang$core$Basics$not(
-						_user$project$DatePickers$isDefined(_p14));
+						_user$project$DatePickers$isDefined(_p13));
 				}(model.startDt)),
 				_elm_lang$html$Html_Events$onInput(
 				A4(_user$project$DatePickers$dateOrTime, _user$project$DatePickers$To, _user$project$DatePickers$SetEndDate, _user$project$DatePickers$SetEndTime, model.endDt))
